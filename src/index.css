@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* optional global styles */
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: #f3f4f6;
+  color: #111827;
+}
