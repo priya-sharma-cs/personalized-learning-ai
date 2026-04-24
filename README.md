@@ -24,3 +24,22 @@ If you are developing a production application, we recommend using TypeScript wi
 - Updated dataset for better training results
 - New trained model stored in /model folder
 
+##  Backend Integration
+
+The backend for the Student Performance Prediction system has been successfully implemented using FastAPI.
+
+###  Features
+- REST API built with FastAPI
+- Integrated Machine Learning model (XGBoost)
+- Real-time prediction via `/predict` endpoint
+- CORS enabled for frontend integration
+
+###  Tech Stack
+- FastAPI
+- Uvicorn
+- Pandas
+- Scikit-learn
+- XGBoost
+- Joblib
+
+###  Project Structure
