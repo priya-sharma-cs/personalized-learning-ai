@@ -103,7 +103,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install fastapi uvicorn pandas scikit-learn xgboost joblib
 
 # Run the server
-uvicorn main:app --reload
+python -m uvicorn api:app --reload
 ```
 
 Backend runs at: `http://localhost:8000`
