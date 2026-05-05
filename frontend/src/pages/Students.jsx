@@ -50,8 +50,16 @@ export default function Students() {
       return s ? JSON.parse(s) : [];
     } catch { return []; }
   });
-  const [risks, setRisks] = useState({});
-  const [loading, setLoading] = useState(true);
+
+  // ── NEW: load cached risks from localStorage on mount ──
+  const [risks, setRisks] = useState(() => {
+    try {
+      const s = localStorage.getItem("studentRisks");
+      return s ? JSON.parse(s) : {};
+    } catch { return {}; }
+  });
+
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [formLoading, setFormLoading] = useState(false);
@@ -68,6 +76,15 @@ export default function Students() {
       .then(r => r.ok ? setBackendOk(true) : setBackendOk(false))
       .catch(() => setBackendOk(false));
   }, []);
+
+  // ── NEW: helper to persist risks to localStorage ──
+  function saveRisks(updated) {
+    localStorage.setItem("studentRisks", JSON.stringify(updated));
+    const email = localStorage.getItem("userEmail");
+    if (email) localStorage.setItem(`studentRisks_${email}`, JSON.stringify(updated));
+  }
+
+  function save(updated) {
     localStorage.setItem("studentList", JSON.stringify(updated));
     const email = localStorage.getItem("userEmail");
     if (email) localStorage.setItem(`studentList_${email}`, JSON.stringify(updated));
@@ -88,16 +105,35 @@ export default function Students() {
     return () => window.removeEventListener("settingsUpdated", load);
   }, []);
 
+  // ── UPDATED: instant load if all risks cached, only fetch missing ones ──
   useEffect(() => {
+    // Check if every student already has a cached prediction
+    const allCached = list.length > 0 && list.every(s => risks[s.id]);
+    if (allCached) {
+      setLoading(false); // ← instant, no API call at all
+      return;
+    }
+
+    // Only run async loop if there are students with missing predictions
+    const missing = list.filter(s => !risks[s.id]);
+    if (missing.length === 0) {
+      setLoading(false);
+      return;
+    }
+
     async function run() {
       setLoading(true);
-      const res = {};
-      for (const s of list) {
+      const res = { ...risks };
+
+      for (const s of missing) {
         const md = s.modelData || buildMD(s);
         try { res[s.id] = { overall: await predictStudentRisk(md) }; }
         catch { res[s.id] = { overall: { risk_level:"Unknown", probability:null } }; }
       }
-      setRisks(res); setLoading(false);
+
+      saveRisks(res);
+      setRisks(res);
+      setLoading(false);
     }
     run();
   }, [list]);
@@ -131,7 +167,9 @@ export default function Students() {
       const newRes={...risks};
       for(const s of parsed){try{newRes[s.id]={overall:await predictStudentRisk(s.modelData)};}catch{newRes[s.id]={overall:{risk_level:"Unknown",probability:null}};}}
       setList(prev=>{const u=[...prev,...parsed];save(u);return u;});
-      setRisks(newRes); setCsvOk(`✓ ${parsed.length} student(s) imported successfully`);
+      setRisks(newRes);
+      saveRisks(newRes); // ── NEW: persist after CSV import
+      setCsvOk(`✓ ${parsed.length} student(s) imported successfully`);
     } catch(err){setCsvError(`✗ ${err.message}`);}
     setCsvLoading(false); e.target.value="";
   }
@@ -166,7 +204,12 @@ export default function Students() {
       const res=await predictStudentRisk(md);
       const ns={id:Date.now(),name:form.name,subjects:{[form.subject1_name]:{attendance:parseInt(form.subject1_attendance),marks:parseInt(form.subject1_marks)},...(form.subject2_attendance?{[form.subject2_name]:{attendance:parseInt(form.subject2_attendance),marks:parseInt(form.subject2_marks)}}:{})},modelData:md};
       setList(prev=>{const u=[...prev,ns];save(u);return u;});
-      setRisks(prev=>({...prev,[ns.id]:{overall:res}}));
+      // ── UPDATED: save risks after adding a student ──
+      setRisks(prev=>{
+        const u={...prev,[ns.id]:{overall:res}};
+        saveRisks(u);
+        return u;
+      });
       setShowForm(false); setForm(EMPTY);
     } catch { setFormError("Failed to get AI prediction. Is the backend running?"); }
     setFormLoading(false);
@@ -175,7 +218,13 @@ export default function Students() {
   function handleDelete(id) {
     if(!window.confirm("Delete this student?")) return;
     setList(prev=>{const u=prev.filter(s=>s.id!==id);save(u);return u;});
-    setRisks(prev=>{const u={...prev};delete u[id];return u;});
+    // ── UPDATED: also remove from risks cache on delete ──
+    setRisks(prev=>{
+      const u={...prev};
+      delete u[id];
+      saveRisks(u);
+      return u;
+    });
   }
 
   function getRisk(id) {
