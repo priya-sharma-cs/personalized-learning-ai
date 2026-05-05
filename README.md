@@ -14,7 +14,7 @@
 
 This project is an **AI-powered learning platform** that uses machine learning techniques to detect knowledge gaps in students based on their performance and learning patterns. The system provides **personalized learning recommendations** to support early academic intervention and improve learning outcomes.
 
-The platform combines a modern React frontend with a powerful FastAPI backend, powered by an **XGBoost classification model** and enhanced with **Generative AI explanations via the Grok API**.
+The platform combines a modern React frontend with a powerful FastAPI backend, powered by an **XGBoost classification model** and enhanced with **Generative AI explanations via the Groq API**.
 
 ---
 
@@ -54,7 +54,7 @@ The platform combines a modern React frontend with a powerful FastAPI backend, p
 | Scikit-learn | Data Preprocessing |
 | Pandas | Data Manipulation |
 | Joblib | Model Serialization |
-| Grok API | GenAI Explanations |
+| Groq API | GenAI Explanations |
 
 ---
 
@@ -66,7 +66,7 @@ personalized-learning-ai/
 │   ├── src/           # Components, pages, charts
 │   └── public/        # Static assets
 ├── backend/           # FastAPI backend server
-│   └── main.py        # API routes and prediction logic
+│   └── api.py        # API routes and prediction logic
 ├── model/             # Trained XGBoost model files
 ├── dataset/           # Student performance datasets
 ├── notebook/          # Jupyter notebooks for EDA & training
@@ -174,6 +174,12 @@ POST /predict
 
 ---
 
+###  Features
+- REST API built with FastAPI
+- Integrated Machine Learning model (XGBoost)
+- Real-time prediction via `/predict` endpoint
+- CORS enabled for frontend integration
+
 ## 📈 Model Updates (Latest)
 
 - ✅ Upgraded from Random Forest → **XGBoost** (better accuracy)
@@ -184,9 +190,9 @@ POST /predict
 
 ---
 
-## 👩‍💻 My Contributions
+## 👩‍💻  Contributions
 
-> I worked across the **entire project stack** — from data to deployment-ready UI.
+> We worked across the **entire project stack** — from data to deployment-ready UI.
 
 ### 🎨 Frontend (React + Vite)
 - Built the complete **Student Dashboard** with risk status cards
@@ -239,3 +245,9 @@ This project is licensed under the MIT License.
 ---
 
 <p align="center">Made with ❤️ by the Personalized Learning AI Team</p>
+
+
+
+
+
+
